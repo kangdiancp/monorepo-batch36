@@ -1,0 +1,102 @@
+syntax = "proto3";
+
+package hr;
+
+service EmployeeService {
+  rpc GetEmployee(GetEmployeeRequest) returns (EmployeeResponse);
+
+  rpc GetEmployeesForPayroll(GetEmployeesForPayrollRequest) returns (stream EmployeeResponse);
+
+  rpc ListDepartments(ListDepartmentsRequest) returns (stream DepartmentResponse);
+
+  // BARU: CRUD department dari sisi payroll-service (via hr-proxy)
+  rpc CreateDepartment(CreateDepartmentRequest) returns (DepartmentResponse);
+  rpc UpdateDepartment(UpdateDepartmentRequest) returns (DepartmentResponse);
+  rpc DeleteDepartment(DeleteDepartmentRequest) returns (DeleteDepartmentResponse);
+}
+
+message GetEmployeeRequest {
+  int32 employee_id = 1;
+}
+
+message GetEmployeesForPayrollRequest {
+  int32 department_id = 1;
+  string employment_status = 2;
+}
+
+message ListDepartmentsRequest {}
+
+// BARU
+message CreateDepartmentRequest {
+  int32 deparment_id = 1;
+  string department_name = 2;
+}
+
+message UpdateDepartmentRequest {
+  int32 department_id = 1;
+  optional string department_name = 2;
+}
+
+message DeleteDepartmentRequest {
+  int32 department_id = 1;
+}
+
+message DeleteDepartmentResponse {
+  bool success = 1;
+}
+
+enum EmploymentStatus {
+  EMPLOYMENT_STATUS_UNSPECIFIED = 0;
+  ACTIVE = 1;
+  ON_LEAVE = 2;
+  SUSPENDED = 3;
+  RESIGNED = 4;
+  TERMINATED = 5;
+}
+
+enum EmploymentType {
+  EMPLOYMENT_TYPE_UNSPECIFIED = 0;
+  PERMANENT = 1;
+  CONTRACT = 2;
+  INTERN = 3;
+  PROBATION = 4;
+}
+
+message EmployeeRequest {
+  int32 employee_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string phone_number = 5;
+  string hire_date = 6;
+  int32 job_id = 7;
+  string job_title = 8;
+  string salary = 9;
+  optional int32 manager_id = 10;
+  optional int32 department_id = 11;
+  optional string department_name = 12;
+  EmploymentStatus employment_status = 13;
+  EmploymentType employment_type = 14;
+  optional string termination_date = 15;
+  string created_at = 16;
+  string updated_at = 17;
+}
+
+message EmployeeResponse {
+  int32 employee_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  double salary = 5;
+  int32 job_id = 6;
+  int32 department_id = 7;
+  string employment_status = 8;
+  string employment_type = 9;
+  string hire_date = 10;
+  string updated_at = 11;
+}
+
+message DepartmentResponse {
+  int32 department_id = 1;
+  string department_name = 2;
+}

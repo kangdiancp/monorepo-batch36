@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'hr-service-api'
+    static_configs:
+      # host.docker.internal: 
+      # kita gunakan spy si container promethues bisa akses ke port hr-service-api.
+      # port hr-service-api itu diluar docker-compose.
+      # pastikan di docker-compose (sudah ditambahkan di docker-compose.otel.yml).
+      - targets: ['host.docker.internal:9464']

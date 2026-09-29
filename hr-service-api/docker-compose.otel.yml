@@ -1,0 +1,43 @@
+# Untuk Running gunakan command berikut:
+#   docker compose -f docker-compose.otel.yml up -d
+#
+# - Jaeger UI (traces):     http://localhost:16686
+# - Prometheus UI (raw):    http://localhost:9090
+# - Loki (logs, no UI):     http://localhost:3100  (lihat lewat Grafana Explore)
+# - Grafana (dashboard):    http://localhost:3001  (login: admin / admin)
+
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "4318:4318"   # OTLP HTTP receiver (dipakai instrumentation.ts untuk trace)
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # perlu di Linux native
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100" # termasuk native OTLP endpoint di /otlp/v1/logs
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000" # use 3001 supaya tidak bentrok with service yg pake port 3000
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+      - loki

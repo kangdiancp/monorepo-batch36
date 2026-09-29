@@ -1,0 +1,61 @@
+{
+  "name": "payroll-service-api",
+  "version": "1.0.0",
+  "description": "Payroll Service API",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "typecheck:test": "tsc -p tsconfig.test.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run src",
+    "test:integration": "vitest run tests/integration",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "start:worker": "node dist/worker.js",
+    "dev:worker": "tsx watch src/worker.ts",
+    "me": "tsx",
+    "proto:generate": "node scripts/generate-proto.js"
+  },
+  "keywords": [
+    "fastify",
+    "postgresql",
+    "drizzle-orm",
+    "json-schema",
+    "typescript",
+    "payroll-service"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@fastify/cors": "^11.3.0",
+    "@fastify/helmet": "^13.1.0",
+    "@grpc/grpc-js": "^1.14.4",
+    "@grpc/proto-loader": "^0.8.1",
+    "@grpc/reflection": "^1.0.4",
+    "@internal/outbox-publisher": "github:kangdiancp/outbox-publisher#v0.1.0",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.45.2",
+    "drizzle-typebox": "^0.3.3",
+    "fastify": "^5.12.0",
+    "kafkajs": "^2.2.4",
+    "node-cron": "^4.6.0",
+    "pg": "^8.12.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.4",
+    "@fastify/type-provider-json-schema-to-ts": "^5.0.0",
+    "@types/google-protobuf": "^3.15.12",
+    "@types/node": "^20.14.15",
+    "@types/pg": "^8.11.6",
+    "ajv": "^8.17.1",
+    "drizzle-kit": "^0.18.1",
+    "json-schema-to-ts": "^3.1.1",
+    "tsx": "^4.16.5",
+    "typescript": "^5.5.4",
+    "vitest": "^4.1.10"
+  }
+}

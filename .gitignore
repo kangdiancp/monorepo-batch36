@@ -1,0 +1,63 @@
+# ------------------------------------------------------------------------------
+# DEPENDENCIES & WORKSPACES
+# ------------------------------------------------------------------------------
+# ignore folder node_modules di root maupun di seluruh sub-folder/service
+node_modules/
+**/node_modules/
+
+unshared/
+**/unshared/
+slides/
+
+# Log instalasi paket
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ------------------------------------------------------------------------------
+# BUILD & COMPILED OUTPUTS
+# ------------------------------------------------------------------------------
+# Mengabaikan hasil kompilasi TypeScript / JS buatan
+dist/
+**/dist/
+build/
+**/build/
+*.tsbuildinfo
+
+# ------------------------------------------------------------------------------
+# ENVIRONMENT & SECRETS
+# ------------------------------------------------------------------------------
+# Avoid file kredensial/kunci rahasia ter-commit secara tidak sengaja
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ------------------------------------------------------------------------------
+# IDE & EDITOR FILES
+# ------------------------------------------------------------------------------
+# Konfigurasi lokal editor/IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# ------------------------------------------------------------------------------
+# OPERATING SYSTEM FILES
+# ------------------------------------------------------------------------------
+# File sampah dari sistem operasi (macOS / Windows)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

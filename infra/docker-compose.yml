@@ -1,0 +1,110 @@
+# Untuk Running gunakan command berikut:
+#   docker compose up -d jaeger prometheus grafana loki
+#
+# - Jaeger UI (traces):     http://localhost:16686
+# - Prometheus UI (raw):    http://localhost:9090
+# - Loki (logs, no UI):     http://localhost:3100  (lihat lewat Grafana Explore)
+# - Grafana (dashboard):    http://localhost:3001  (login: admin / admin)
+
+name: microservices-infra
+services:
+  # Observability 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "4318:4318"   # OTLP HTTP receiver (dipakai instrumentation.ts tiap service untuk trace)
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # perlu di Linux native
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100" # termasuk native OTLP endpoint di /otlp/v1/logs
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000" # 3001 supaya tidak bentrok dengan service lain yang pakai 3000
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+      - loki
+
+  # Kafka (KRaft mode, tanpa Zookeeper) 
+  kafka:
+    image: apache/kafka:3.9.0
+    ports:
+      - "9092:9092" # listener EXTERNAL, dipakai service yang jalan di host (hr-service-api, payroll-service-api)
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      # UUID base64 tetap/deterministik — aman untuk single-node local dev.
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+
+      # Dual listener: PLAINTEXT untuk antar container di docker network ini
+      # (kafka-init, kafka-ui), EXTERNAL untuk app yang jalan di host machine.
+      KAFKA_LISTENERS: PLAINTEXT://:29092,CONTROLLER://:9093,EXTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      # Auto-create topic dimatikan — topic dibuat eksplisit oleh kafka-init,
+      # supaya partition count & replication factor-nya terkontrol.
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:29092 --list"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Init job — buat topic yang dibutuhkan sekali saat compose up, lalu exit.
+  # Aman di-run berkali-kali (--if-not-exists). Tambahkan topic baru di sini
+  # kalau nanti ada event lain (mis. saga.* untuk banking-service).
+  kafka-init:
+    image: apache/kafka:3.9.0
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --if-not-exists \
+          --topic hr.employee.events --partitions 3 --replication-factor 1
+        echo "Topic 'hr.employee.events' siap (3 partisi)."
+
+  # UI untuk debug: lihat isi topic, consumer group & lag-nya (mis. mastiin
+  # payroll-service.employee-sync tidak nge-lag).
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=microservices-local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:29092
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+volumes:
+  kafka_data:

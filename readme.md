@@ -1,0 +1,1 @@
+Remove-Item -Recurse -Force node_modules, hr-service-api\node_modules, payroll-service-api\node_modules, package-lock.json

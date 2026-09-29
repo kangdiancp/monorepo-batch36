@@ -1,0 +1,10 @@
+{
+  "name": "microservices",
+  "private": true,
+  "workspaces": [
+    "hr-service-api",
+    "payroll-service-api",
+    "auth-service-api",
+    "shared/*"
+  ]
+}

@@ -1,0 +1,8 @@
+const path = require('path');
+
+module.exports = {
+    'config': path.resolve('config', 'database.js'), //sequelize akan create  file database.js di folder config
+    'models-path': path.resolve('src', 'shared', 'utils', 'models'), //sequelize akan generate folder models di src/shared/utils
+    'migrations-path': path.resolve('src', 'shared', 'utils', 'migrations'),//sequelize akan generate migrations models di src/shared/utils
+    'seeders-path': path.resolve('src', 'shared', 'utils', 'seeders'),//sequelize akan generate folder seeders di src/shared/utils
+};

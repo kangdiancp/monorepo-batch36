@@ -1,0 +1,46 @@
+{
+  "name": "auth-service-api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start:dev": "dotenv -e .env.development nodemon index.js",
+    "start:test": "dotenv -e .env.test node index.js",
+    "start:prod": "dotenv -e .env.production node index.js",
+    "swagger:gen": "node swagger.js",
+    "db:migrate": "sequelize-cli db:migrate",
+    "db:undo": "sequelize-cli db:migrate:undo",
+    "db:seed": "sequelize-cli db:seed:all",
+    "db:seed:only": "sequelize-cli db:seed --seed",
+    "db:seed:undo:only": "sequelize-cli db:seed:undo --seed",
+    "db:seed:undo": "sequelize-cli db:seed:undo",
+    "db:reset": "sequelize-cli db:migrate:undo:all && sequelize-cli db:migrate && sequelize-cli db:seed:all",
+    "db:status": "sequelize-cli db:migrate:status",
+    "db:pull:hr": "sequelize-auto -h localhost -d tms_db -u postgres -x admin -p 5432 -e postgres -o ./src/shared/utils/models/hr -s hr --sg --cls --caseModel p --underscored --no-timestamps",
+    "db:pull:account": "sequelize-auto -h localhost -d tms_db -u postgres -x admin -p 5432 -e postgres -o ./src/shared/utils/models/accounts -s account --sg --cls --pc --caseModel p --noAlias --no-timestamps"
+  },
+  "dependencies": {
+    "argon2": "^0.44.0",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "dotenv": "^17.4.2",
+    "express": "~4.16.1",
+    "ioredis": "^6.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "~1.9.1",
+    "nodemailer": "^9.0.1",
+    "pg": "^8.22.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.8",
+    "swagger-autogen": "^2.23.7",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^14.0.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^11.0.0",
+    "nodemon": "^3.1.14",
+    "sequelize-auto": "^0.8.8",
+    "sequelize-cli": "^6.6.5"
+  }
+}
