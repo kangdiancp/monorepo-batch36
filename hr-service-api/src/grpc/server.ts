@@ -1,7 +1,7 @@
 import { Server, ServerCredentials } from '@grpc/grpc-js';
 import { EmployeeServiceService, type EmployeeServiceServer } from './generated/employee';
 import * as employeeGrpcHandler from '../modules/employees/grpc/employees.grpc-handler';
-import * as departmentGrpcHandler from '../modules/departments/grpc/departments.grpc-handler';
+import * as departmentGrpcHandler from '../modules/departments/grpc/department.grpc-handler';
 
 export function startGrpcServer(port = 50051): Promise<Server> {
   return new Promise((resolve, reject) => {

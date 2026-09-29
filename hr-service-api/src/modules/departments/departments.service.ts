@@ -2,7 +2,7 @@ import { ApiError } from '../../common/utils/api-error';
 import type { Pagination } from '../../common/utils/api-response';
 import * as departmentRepository from './departments.repository';
 import type { CreateDepartmentInput, ListDepartmentQuery, UpdateDepartmentInput } from './departments.schema';
-import type { DepartmentRow } from './departments.types';
+import type { DepartmentRow, DepartmentWithEmployeePreview } from './departments.types';
 
 export async function listDepartments(
   filter: ListDepartmentQuery,
@@ -59,4 +59,14 @@ export async function deleteDepartment(id: number): Promise<void> {
   }
 
   await departmentRepository.remove(id);
+}
+
+export async function getDepartmentWithEmployeePreview(
+  id: number,
+): Promise<DepartmentWithEmployeePreview> {
+  const result = await departmentRepository.findByIdWithEmployeePreview(id);
+  if (!result) {
+    throw ApiError.notFound(`Department with id ${id} not found`);
+  }
+  return result;
 }
