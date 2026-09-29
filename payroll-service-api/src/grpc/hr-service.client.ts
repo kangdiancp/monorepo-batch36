@@ -10,6 +10,7 @@ const HR_SERVICE_GRPC_URL = process.env.HR_SERVICE_GRPC_URL ?? 'localhost:50051'
 
 // Singleton — 1 channel gRPC dipakai ulang untuk semua request, jadi ga bikin
 // new connection tiap kali dipanggil 
+//
 let client: EmployeeServiceClient | undefined;
 
 function getClient(): EmployeeServiceClient {
@@ -84,7 +85,7 @@ export function listDepartments(): Promise<DepartmentResponse[]> {
         const results: DepartmentResponse[] = [];
         const call = getClient().listDepartments({});
 
-        call.on('data', (res: DepartmentResponse) => results.push(res));
+        call.on('data', (res: DepartmentResponse) => results.push(res)); //array
         call.on('end', () => resolve(results));
         call.on('error', (err) => reject(err));
     });

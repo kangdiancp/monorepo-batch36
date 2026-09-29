@@ -1,0 +1,61 @@
+@startuml hr-proxy-get-employee
+title GET /api/hr-proxy/employees/:id — REST ke gRPC
+
+actor "Client\n(Postman/FE)" as Client
+participant "hr-proxy.routes.ts" as Routes
+participant "hr-proxy.controller.ts" as Controller
+participant "hr-proxy.service.ts" as Service
+participant "grpc/hr-service.client.ts" as GrpcClient
+participant "hr-service-api\n(gRPC server)" as HrServer
+participant "employees.grpc-handler.ts" as GrpcHandler
+
+Client -> Routes : HTTP GET /api/hr-proxy/employees/:id
+activate Routes
+
+Routes -> Controller : dispatch (schema tervalidasi)
+activate Controller
+
+Controller -> Service : getEmployeeById(id)
+activate Service
+
+Service -> GrpcClient : getEmployee(id)
+activate GrpcClient
+
+GrpcClient -> HrServer : gRPC call GetEmployee\n(employee_id)
+activate HrServer
+
+HrServer -> GrpcHandler : route ke handler
+activate GrpcHandler
+
+GrpcHandler --> HrServer : EmployeeResponse
+deactivate GrpcHandler
+
+alt employee ditemukan
+    HrServer --> GrpcClient : gRPC OK + EmployeeResponse
+    deactivate HrServer
+    GrpcClient --> Service : HrEmployeeDto
+    deactivate GrpcClient
+    Service --> Controller : HrEmployeeDto
+    deactivate Service
+    Controller -> Controller : sendSuccess(reply, employee, 200)
+    Controller --> Client : 200 OK\n{ success: true, data: {...} }
+    deactivate Controller
+
+else employee tidak ditemukan (gRPC NOT_FOUND)
+    HrServer --> GrpcClient : gRPC status NOT_FOUND
+    GrpcClient --> Service : resolve(null)
+    Service -> Service : throw ApiError.notFound(...)
+    Service --> Controller : ApiError (404)
+    Controller --> Client : 404 Not Found\n{ success: false, message: "..." }
+
+else hr-service-api tidak tersedia (gRPC UNAVAILABLE)
+    HrServer --> GrpcClient !! : gRPC status UNAVAILABLE
+    GrpcClient -> GrpcClient : toHrServiceClientError(err)
+    GrpcClient --> Service : reject(HrServiceClientError)
+    Service -> Service : mapGrpcErrorToApiError(err)
+    Service --> Controller : ApiError.serviceUnavailable (503)
+    Controller --> Client : 503 Service Unavailable\n{ success: false, message: "..." }
+end
+
+deactivate Routes
+@enduml

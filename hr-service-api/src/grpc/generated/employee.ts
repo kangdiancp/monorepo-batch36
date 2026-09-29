@@ -1564,60 +1564,12 @@ export const EmployeeServiceService = {
     responseSerialize: (value: DepartmentResponse): Buffer => Buffer.from(DepartmentResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): DepartmentResponse => DepartmentResponse.decode(value),
   },
-  /** Add: CRUD department dari sisi payroll-service (via hr-proxy) */
-  createDepartment: {
-    path: "/hr.EmployeeService/CreateDepartment" as const,
-    requestStream: false as const,
-    responseStream: false as const,
-    requestSerialize: (value: CreateDepartmentRequest): Buffer =>
-      Buffer.from(CreateDepartmentRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer): CreateDepartmentRequest => CreateDepartmentRequest.decode(value),
-    responseSerialize: (value: DepartmentResponse): Buffer => Buffer.from(DepartmentResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer): DepartmentResponse => DepartmentResponse.decode(value),
-  },
-  updateDepartment: {
-    path: "/hr.EmployeeService/UpdateDepartment" as const,
-    requestStream: false as const,
-    responseStream: false as const,
-    requestSerialize: (value: UpdateDepartmentRequest): Buffer =>
-      Buffer.from(UpdateDepartmentRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer): UpdateDepartmentRequest => UpdateDepartmentRequest.decode(value),
-    responseSerialize: (value: DepartmentResponse): Buffer => Buffer.from(DepartmentResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer): DepartmentResponse => DepartmentResponse.decode(value),
-  },
-  deleteDepartment: {
-    path: "/hr.EmployeeService/DeleteDepartment" as const,
-    requestStream: false as const,
-    responseStream: false as const,
-    requestSerialize: (value: DeleteDepartmentRequest): Buffer =>
-      Buffer.from(DeleteDepartmentRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer): DeleteDepartmentRequest => DeleteDepartmentRequest.decode(value),
-    responseSerialize: (value: DeleteDepartmentResponse): Buffer =>
-      Buffer.from(DeleteDepartmentResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer): DeleteDepartmentResponse => DeleteDepartmentResponse.decode(value),
-  },
-  getDepartmentWithEmployees: {
-    path: "/hr.EmployeeService/GetDepartmentWithEmployees" as const,
-    requestStream: false as const,
-    responseStream: false as const,
-    requestSerialize: (value: GetDepartmentRequest): Buffer => Buffer.from(GetDepartmentRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer): GetDepartmentRequest => GetDepartmentRequest.decode(value),
-    responseSerialize: (value: DepartmentWithEmployeesResponse): Buffer =>
-      Buffer.from(DepartmentWithEmployeesResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer): DepartmentWithEmployeesResponse =>
-      DepartmentWithEmployeesResponse.decode(value),
-  },
 } as const;
 
 export interface EmployeeServiceServer extends UntypedServiceImplementation {
   getEmployee: handleUnaryCall<GetEmployeeRequest, EmployeeResponse>;
   getEmployeesForPayroll: handleServerStreamingCall<GetEmployeesForPayrollRequest, EmployeeResponse>;
   listDepartments: handleServerStreamingCall<ListDepartmentsRequest, DepartmentResponse>;
-  /** Add: CRUD department dari sisi payroll-service (via hr-proxy) */
-  createDepartment: handleUnaryCall<CreateDepartmentRequest, DepartmentResponse>;
-  updateDepartment: handleUnaryCall<UpdateDepartmentRequest, DepartmentResponse>;
-  deleteDepartment: handleUnaryCall<DeleteDepartmentRequest, DeleteDepartmentResponse>;
-  getDepartmentWithEmployees: handleUnaryCall<GetDepartmentRequest, DepartmentWithEmployeesResponse>;
 }
 
 export interface EmployeeServiceClient extends Client {
@@ -1654,67 +1606,6 @@ export interface EmployeeServiceClient extends Client {
     metadata?: Metadata,
     options?: Partial<CallOptions>,
   ): ClientReadableStream<DepartmentResponse>;
-  /** Add: CRUD department dari sisi payroll-service (via hr-proxy) */
-  createDepartment(
-    request: CreateDepartmentRequest,
-    callback: (error: ServiceError | null, response: DepartmentResponse) => void,
-  ): ClientUnaryCall;
-  createDepartment(
-    request: CreateDepartmentRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: DepartmentResponse) => void,
-  ): ClientUnaryCall;
-  createDepartment(
-    request: CreateDepartmentRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: DepartmentResponse) => void,
-  ): ClientUnaryCall;
-  updateDepartment(
-    request: UpdateDepartmentRequest,
-    callback: (error: ServiceError | null, response: DepartmentResponse) => void,
-  ): ClientUnaryCall;
-  updateDepartment(
-    request: UpdateDepartmentRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: DepartmentResponse) => void,
-  ): ClientUnaryCall;
-  updateDepartment(
-    request: UpdateDepartmentRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: DepartmentResponse) => void,
-  ): ClientUnaryCall;
-  deleteDepartment(
-    request: DeleteDepartmentRequest,
-    callback: (error: ServiceError | null, response: DeleteDepartmentResponse) => void,
-  ): ClientUnaryCall;
-  deleteDepartment(
-    request: DeleteDepartmentRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: DeleteDepartmentResponse) => void,
-  ): ClientUnaryCall;
-  deleteDepartment(
-    request: DeleteDepartmentRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: DeleteDepartmentResponse) => void,
-  ): ClientUnaryCall;
-  getDepartmentWithEmployees(
-    request: GetDepartmentRequest,
-    callback: (error: ServiceError | null, response: DepartmentWithEmployeesResponse) => void,
-  ): ClientUnaryCall;
-  getDepartmentWithEmployees(
-    request: GetDepartmentRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: DepartmentWithEmployeesResponse) => void,
-  ): ClientUnaryCall;
-  getDepartmentWithEmployees(
-    request: GetDepartmentRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: DepartmentWithEmployeesResponse) => void,
-  ): ClientUnaryCall;
 }
 
 export const EmployeeServiceClient = makeGenericClientConstructor(

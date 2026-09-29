@@ -66,3 +66,7 @@ export async function remove(id: number): Promise<boolean> {
         .returning({ departmentId: departments.departmentId });
     return result.length > 0;
 }
+
+export function findByIdWithEmployeePreview(id: number) {
+  throw new Error('Function not implemented.');
+}

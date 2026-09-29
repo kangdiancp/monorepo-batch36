@@ -1,0 +1,779 @@
+{
+  "info": {
+    "_postman_id": "4021bc93-3b8a-458c-8231-797b3ac65c53",
+    "name": "Microservices-Batch36",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "31104244"
+  },
+  "item": [
+    {
+      "name": "auth-service-api",
+      "item": [
+        {
+          "name": "auth-otp",
+          "item": [
+            {
+              "name": "signup",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"diancp\",\r\n  \"email\": \"diancp79@gmail.com\",\r\n  \"password\": \"rahas1@XX\",\r\n  \"fullName\": \"diancp\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{auth_url}}/api/auth/signup",
+                  "host": [
+                    "{{auth_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "signup"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "verifyOtp",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"diancp79@gmail.com\",\r\n  \"otp\" : \"635331\",\r\n  \"purpose\": \"EMAIL_VERIFY\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{auth_url}}/api/auth/verify-otp",
+                  "host": [
+                    "{{auth_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "verify-otp"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "login",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"identifier\": \"diancp79@gmail.com\",\r\n  \"password\": \"rahas1@XX\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{auth_url}}/api/auth/login",
+                  "host": [
+                    "{{auth_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "sendOtp",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"diancp79@gmail.com\",\r\n  \"purpose\": \"EMAIL_VERIFY\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{auth_url}}/api/auth/send-otp",
+                  "host": [
+                    "{{auth_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "send-otp"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "UpdatePassword",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"diancp79@gmail.com\",\r\n  \"otp\" : \"891006\",\r\n  \"purpose\": \"EMAIL_VERIFY\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{auth_url}}/api/auth/update-password",
+                  "host": [
+                    "{{auth_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "update-password"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "refresh",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"refreshToken\": \"f047b1d8-2ce3-4bad-a890-bbe7d396300c\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{auth_url}}/api/auth/refresh",
+                  "host": [
+                    "{{auth_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "refresh"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "logout",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"refreshToken\": \"c4e641a1-3da8-4d7a-ad34-e353b1c423bb\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{auth_url}}/api/auth/logout",
+                  "host": [
+                    "{{auth_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "logout"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "getUsers",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"refreshToken\": \"f047b1d8-2ce3-4bad-a890-bbe7d396300c\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{auth_url}}/api/auth/users",
+                  "host": [
+                    "{{auth_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "users"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "me",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"refreshToken\": \"f047b1d8-2ce3-4bad-a890-bbe7d396300c\"\r\n}"
+                },
+                "url": {
+                  "raw": "{{dev_url}}/api/auth/users",
+                  "host": [
+                    "{{dev_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "users"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "health",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{auth_url}}/api/health",
+                  "host": [
+                    "{{auth_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "health"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "oauth",
+          "item": []
+        }
+      ]
+    },
+    {
+      "name": "hr-service-api",
+      "item": [
+        {
+          "name": "departments",
+          "item": [
+            {
+              "name": "findAllDepartment",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{hr_url}}/api/hr/departments?page=1&limit=20&search=IT&sortBy=department_name&sortDir=asc",
+                  "host": [
+                    "{{hr_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "departments"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "search",
+                      "value": "IT"
+                    },
+                    {
+                      "key": "sortBy",
+                      "value": "department_name"
+                    },
+                    {
+                      "key": "sortDir",
+                      "value": "asc"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "findById",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{hr_url}}/api/hr/departments",
+                  "host": [
+                    "{{hr_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "departments"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "create",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"department_name\": \"Medsos\",\r\n    \"location_id\": 1700\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{hr_url}}/api/hr/departments",
+                  "host": [
+                    "{{hr_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "departments"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "update",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"department_id\": 12,\r\n    \"department_name\": \"Medsos Tiktok\",\r\n    \"location_id\": 1700\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{hr_url}}/api/hr/departments/12",
+                  "host": [
+                    "{{hr_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "departments",
+                    "12"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "delete",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"department_id\": 12,\r\n    \"department_name\": \"Medsos Tiktok\",\r\n    \"location_id\": 1700\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{hr_url}}/api/hr/departments/12",
+                  "host": [
+                    "{{hr_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "departments",
+                    "12"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Regions",
+          "item": [
+            {
+              "name": "findAll",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{hr_url}}/api/hr/regions?page=1&limit=3",
+                  "host": [
+                    "{{hr_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "regions"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "3"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "findById",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{hr_url}}/api/hr/regions/1",
+                  "host": [
+                    "{{hr_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "regions",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "findByIdCountries",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{hr_url}}/api/hr/regions/3?include=countries",
+                  "host": [
+                    "{{hr_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "regions",
+                    "3"
+                  ],
+                  "query": [
+                    {
+                      "key": "include",
+                      "value": "countries"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "create",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{hr_url}}/api/hr/regions",
+                  "host": [
+                    "{{hr_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "regions"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "employees",
+          "item": [
+            {
+              "name": "findAll",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{hr_url}}/api/hr/employees?page=1&limit=3",
+                  "host": [
+                    "{{hr_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "employees"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "3"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "create",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"first_name\": \"dian\",\r\n    \"last_name\": \"cahya\",\r\n    \"email\": \"diancp79@gmail.com\",\r\n    \"phone_number\": \"0813456526\",\r\n    \"hire_date\": \"2026-08-28\",\r\n    \"job_id\": 34,\r\n    \"salary\": 1500.78,\r\n    \"manager_id\": null,\r\n    \"department_id\": 61,\r\n    \"employment_status\": \"ACTIVE\",\r\n    \"employment_Type\": \"CONTRACT\",\r\n    \"termination_Date\": null\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{hr_url}}/api/hr/employees",
+                  "host": [
+                    "{{hr_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "employees"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "payroll-service-api",
+      "item": [
+        {
+          "name": "ListDepartments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:3003/api/payroll/hr-grpc/departments",
+              "host": [
+                "localhost"
+              ],
+              "port": "3003",
+              "path": [
+                "api",
+                "payroll",
+                "hr-grpc",
+                "departments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "findEmployeeById",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:3003/api/payroll/hr/employees/50052",
+              "host": [
+                "localhost"
+              ],
+              "port": "3003",
+              "path": [
+                "api",
+                "payroll",
+                "hr",
+                "employees",
+                "50052"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CreateDepartment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"department_name\": \"Office Boys\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:3003/api/payroll/hr/departments",
+              "host": [
+                "localhost"
+              ],
+              "port": "3003",
+              "path": [
+                "api",
+                "payroll",
+                "hr",
+                "departments"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "practise-service-api",
+      "item": [
+        {
+          "name": "New Request",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"department_name\": \"Office Boys\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:3003/api/payroll/hr/departments",
+              "host": [
+                "localhost"
+              ],
+              "port": "3003",
+              "path": [
+                "api",
+                "payroll",
+                "hr",
+                "departments"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "auth_url",
+      "value": "http://localhost:3001"
+    },
+    {
+      "key": "hr_url",
+      "value": "http://localhost:3002"
+    }
+  ]
+}
