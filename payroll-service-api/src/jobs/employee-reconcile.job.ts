@@ -23,7 +23,7 @@ async function reconcileAllDepartments(): Promise<void> {
     const startedAt = Date.now();
     console.log('[employee-reconcile] mulai full reconcile...');
 
-    const departments = await hrClient.listDepartments();
+    const departments = await hrClient.listDepartments(); //gRPC streams
     for (const dept of departments) {
         await upsertDepartment({
             deparmentId: dept.departmentId,

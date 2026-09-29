@@ -1,5 +1,4 @@
 import 'dotenv/config';
-
 import { runInitialSync, scheduleEmployeeReconcile } from './jobs/employee-reconcile.job';
 
 
@@ -13,7 +12,6 @@ async function main(): Promise<void> {
 
 
     scheduleEmployeeReconcile();
-
     console.log('[worker] semua job berjalan (consumer + cron reconcile).');
 }
 
