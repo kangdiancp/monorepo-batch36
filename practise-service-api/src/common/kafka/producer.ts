@@ -1,11 +1,5 @@
 import { Kafka, Partitioners, type Producer } from 'kafkajs';
 
-// ============================================================================
-// producer.ts — dipakai HANYA oleh outbox-publisher.worker.ts.
-// Modul lain (controller/service/repository) TIDAK boleh import ini langsung
-// — publish ke Kafka SELALU lewat outbox table, supaya tetap dalam
-// transactional outbox pattern (lihat employees.repository.ts).
-// ============================================================================
 
 const kafka = new Kafka({
     clientId: 'hr-service-outbox-publisher',
@@ -19,8 +13,6 @@ export async function getKafkaProducer(): Promise<Producer> {
 
     producer = kafka.producer({
         createPartitioner: Partitioners.LegacyPartitioner,
-        // idempotent: true, // aktifkan kalau versi Kafka broker & kafkajs mendukung,
-        // supaya retry dari sisi producer sendiri tidak menghasilkan duplicate message.
     });
     await producer.connect();
     return producer;

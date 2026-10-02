@@ -4,10 +4,6 @@ import { env } from '../config/env';
 import * as schema from './schema';
 
 
-/**
- * Pool koneksi PostgreSQL — tetap pakai `pg` sebagai driver di bawahnya.
- * Drizzle hanya membungkus pool ini dengan query builder yang type-safe.
- */
 export const pool = new Pool({
   host: env.DB_HOST,
   port: env.DB_PORT,
@@ -24,11 +20,7 @@ pool.on('error', (err) => {
   process.exit(1);
 });
 
-/**
- * Instance Drizzle yang dipakai di seluruh repository.
- * `schema` di-pass supaya relational query API (`db.query.xxx.findFirst({ with: {...} })`)
- * bisa dipakai untuk hasil nested (JOIN otomatis, tanpa raw SQL manual).
- */
+
 export const db = drizzle(pool, {
   schema,
   logger: env.NODE_ENV === 'development',
