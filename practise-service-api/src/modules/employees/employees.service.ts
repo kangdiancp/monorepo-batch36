@@ -29,9 +29,7 @@ export async function getEmployeeById(id: number): Promise<EmployeeApiRow> {
 }
 
 export async function createEmployee(input: CreateEmployeeInput): Promise<EmployeeApiRow> {
-  // ck_employees_termination_date: terminationDate >= hireDate. Cross-field,
-  // tidak bisa divalidasi lewat JSON Schema — dicek manual di sini SEBELUM
-  // insert, supaya error-nya jelas (bukan cuma "DB constraint violation").
+
   if (input.termination_date && input.termination_date < input.hire_date) {
     throw ApiError.badRequest('termination_date tidak boleh lebih awal dari hire_date');
   }
@@ -55,8 +53,7 @@ export async function updateEmployee(id: number, input: UpdateEmployeeInput): Pr
     throw ApiError.badRequest('Employee tidak bisa menjadi manager untuk dirinya sendiri');
   }
 
-  // Cross-field date check — pakai nilai baru kalau dikirim, kalau tidak
-  // fallback ke nilai existing (karena PATCH bisa cuma kirim salah satu).
+
   const effectiveHireDate = input.hire_date ?? existing.hireDate;
   const effectiveTerminationDate =
     input.termination_date !== undefined ? input.termination_date : existing.terminationDate;
@@ -78,13 +75,7 @@ export async function updateEmployee(id: number, input: UpdateEmployeeInput): Pr
   return updated;
 }
 
-/**
- * CATATAN: menghapus employee akan CASCADE ke dependents, employee_bank_accounts,
- * dan employee_files (semua onDelete: cascade — ikut terhapus). Employee lain
- * yang punya managerId ke sini akan otomatis di-set NULL (onDelete: set null).
- * Kalau kamu butuh konfirmasi ekstra sebelum hapus (mengingat efek berantai
- * ini), tambahkan pengecekan/warning di controller sebelum panggil ini.
- */
+
 export async function deleteEmployee(id: number): Promise<void> {
   const existing = await employeeRepository.findById(id);
   if (!existing) {
@@ -92,4 +83,18 @@ export async function deleteEmployee(id: number): Promise<void> {
   }
 
   await employeeRepository.remove(id);
+}
+
+
+export async function terminateEmployee(id: number): Promise<EmployeeApiRow> {
+  const existing = await employeeRepository.findById(id);
+  if (!existing) throw ApiError.notFound(`Employee with id ${id} not found`);
+  if (existing.employmentStatus === 'TERMINATED') throw ApiError.conflict('Employee sudah berstatus TERMINATED');
+
+  const today = new Date().toISOString().slice(0, 10);
+  if (today < existing.hireDate) throw ApiError.badRequest('termination_date tidak boleh lebih awal dari hire_date');
+
+  const terminated = await employeeRepository.terminate(id, today);
+  if (!terminated) throw ApiError.conflict('Status employee sudah berubah, terminate dibatalkan');
+  return terminated;
 }

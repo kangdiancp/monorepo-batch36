@@ -156,16 +156,9 @@ export const employeeFiles = hr.table("employee_files", {
 	check("ck_ef_storage_provider", sql`(storage_provider)::text = ANY ((ARRAY['LOCAL'::character varying, 'CLOUDINARY'::character varying, 'S3'::character varying, 'GCS'::character varying])::text[])`),
 ]);
 
-// ============================================================================
-// employeeEventsOutbox — BARU (transactional outbox pattern)
-// Insert ke sini WAJIB dalam transaksi yang sama dengan insert/update/delete
-// di tabel `employees` (lihat employees.repository.ts). Dibaca & dipublish ke
-// Kafka oleh proses terpisah: src/workers/outbox-publisher.worker.ts.
-//
-// SENGAJA TANPA foreignKey ke employees.employeeId — event 'employee.terminated'
-// harus tetap bisa tersimpan & terpublish walau row employee sudah dihapus
-// permanen (hard delete) dalam transaksi yang sama.
-// ============================================================================
+//ketika user melakukan operation CRUD, maka data akan disimpan di table employee_events_outbox.
+// outbox_publisher akan baca table ini dan akan kirim producer untuk send messasge ke kafka broker
+// jika berhasil status akan diubah dari pending ke published
 export const employeeEventsOutbox = hr.table("employee_events_outbox", {
 	outboxId: uuid("outbox_id").defaultRandom().primaryKey().notNull(),
 	aggregateType: varchar("aggregate_type", { length: 50 }).default('EMPLOYEE').notNull(),

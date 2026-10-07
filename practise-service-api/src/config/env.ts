@@ -74,9 +74,11 @@ const parsedEnv = {
   DB_HOST: requireString('DB_HOST'),
   DB_PORT: optionalPositiveInt('DB_PORT', 5432),
   DB_NAME: requireString('DB_NAME'),
+  DB_NAME_PAYROLL: requireString('DB_NAME_PAYROLL'),
   DB_USER: requireString('DB_USER'),
   DB_PASSWORD: requireString('DB_PASSWORD'),
   DB_SCHEMA: optionalString('DB_SCHEMA', 'hr'),
+  DB_SCHEMAS: optionalString('DB_SCHEMAS', 'fin,hr,saga,public'),
   DB_POOL_MAX: optionalPositiveInt('DB_POOL_MAX', 10),
   DB_SSL: optionalBoolean('DB_SSL', false),
 };
