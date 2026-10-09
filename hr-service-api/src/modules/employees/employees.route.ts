@@ -84,4 +84,11 @@ export const employeeRoutes: FastifyPluginAsync = async (fastify) => {
         },
         employeeController.deleteEmployee,
     );
+
+    fastify.post('/:id/terminate', {
+        schema: {
+            tags: ['Employees'], params: employeeIdParamSchema,
+            response: { 200: createApiResponseSchema(employeeSchema) }
+        },
+    }, employeeController.terminateEmployee);
 };

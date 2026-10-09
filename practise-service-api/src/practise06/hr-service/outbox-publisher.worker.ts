@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { db } from '../../db';
-import { disconnectKafkaProducer, getKafkaProducer } from '../../common/kafka/producer';
+import { disconnectKafkaProducer, getKafkaProducer } from './kafka-producer';
 import { TOPIC, type EmployeeEventType, type HrEmployeeEvent } from './kafka-config';
 
 

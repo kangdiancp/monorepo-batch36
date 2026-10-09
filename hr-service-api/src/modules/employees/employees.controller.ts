@@ -50,3 +50,11 @@ export async function deleteEmployee(
   await employeeService.deleteEmployee(id);
   sendSuccess(reply, null, 'Employee deleted successfully');
 }
+
+export async function terminateEmployee(
+  request: FastifyRequest<{ Params: EmployeeIdParam }>,
+  reply: FastifyReply,
+): Promise<void> {
+  const employee = await employeeService.terminateEmployee(request.params.id);
+  sendSuccess(reply, employee, 'Employee terminated successfully');
+}

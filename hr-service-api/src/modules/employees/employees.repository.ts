@@ -1,12 +1,12 @@
-import { and, count, eq, ilike, or, type SQL } from 'drizzle-orm';
+import { and, count, eq, ilike, ne, or, type SQL } from 'drizzle-orm';
 import { trace } from '@opentelemetry/api';
 import { db } from '../../db';
 import { employees } from '../../db/schema';
 import type { CreateEmployeeInput, ListEmployeeQuery, UpdateEmployeeInput } from './employees.schema';
 import type { EmployeeApiRow, EmployeeRow } from './employees.types';
+import { enqueueEmployeeEvent } from './employee-events';
 
 const tracer = trace.getTracer('employees.repository');
-
 
 function toApiRow(row: EmployeeRow): EmployeeApiRow {
   return { ...row, salary: Number(row.salary) };
@@ -19,7 +19,6 @@ export async function findAll(
     try {
       const { page, limit, search, departmentId, jobId, managerId, employmentStatus, employmentType } = filter;
       const offset = (page - 1) * limit;
-
 
       span.setAttributes({
         'employees.filter.has_search': Boolean(search),
@@ -68,48 +67,79 @@ export async function findById(id: number): Promise<EmployeeApiRow | null> {
   return row ? toApiRow(row) : null;
 }
 
+/** INSERT employee + event `employee.created` dalam SATU transaksi. */
 export async function create(input: CreateEmployeeInput): Promise<EmployeeApiRow> {
-  const [row] = await db
-    .insert(employees)
-    .values({
-      firstName: input.first_name ?? null,
-      lastName: input.last_name,
-      email: input.email,
-      phoneNumber: input.phone_number ?? null,
-      hireDate: input.hire_date,
-      jobId: input.job_id,
-      salary: input.salary.toFixed(2), // number -> string, sesuai precision(8,2)
-      managerId: input.manager_id ?? null,
-      departmentId: input.department_id ?? null,
-      ...(input.employment_status !== undefined && { employmentStatus: input.employment_status }),
-      ...(input.employment_type !== undefined && { employmentType: input.employment_type }),
-      terminationDate: input.termination_date ?? null,
-    })
-    .returning();
-  return toApiRow(row!);
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .insert(employees)
+      .values({
+        firstName: input.first_name ?? null,
+        lastName: input.last_name,
+        email: input.email,
+        phoneNumber: input.phone_number ?? null,
+        hireDate: input.hire_date,
+        jobId: input.job_id,
+        salary: input.salary.toFixed(2), 
+        managerId: input.manager_id ?? null,
+        departmentId: input.department_id ?? null,
+        ...(input.employment_status !== undefined && { employmentStatus: input.employment_status }),
+        ...(input.employment_type !== undefined && { employmentType: input.employment_type }),
+        terminationDate: input.termination_date ?? null,
+      })
+      .returning();
+
+    await enqueueEmployeeEvent(tx, 'employee.created', row!);
+    return toApiRow(row!);
+  });
 }
 
 export async function update(id: number, input: UpdateEmployeeInput): Promise<EmployeeApiRow | null> {
-  const [row] = await db
-    .update(employees)
-    .set({
-      ...(input.first_name !== undefined && { firstName: input.first_name }),
-      ...(input.last_name !== undefined && { lastName: input.last_name }),
-      ...(input.email !== undefined && { email: input.email }),
-      ...(input.phone_number !== undefined && { phoneNumber: input.phone_number }),
-      ...(input.hire_date !== undefined && { hireDate: input.hire_date }),
-      ...(input.job_id !== undefined && { jobId: input.job_id }),
-      ...(input.salary !== undefined && { salary: input.salary.toFixed(2) }),
-      ...(input.manager_id !== undefined && { managerId: input.manager_id }),
-      ...(input.department_id !== undefined && { departmentId: input.department_id }),
-      ...(input.employment_status !== undefined && { employmentStatus: input.employment_status }),
-      ...(input.employment_type !== undefined && { employmentType: input.employment_type }),
-      ...(input.termination_date !== undefined && { terminationDate: input.termination_date }),
-      updatedAt: new Date().toISOString(),
-    })
-    .where(eq(employees.employeeId, id))
-    .returning();
-  return row ? toApiRow(row) : null;
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .update(employees)
+      .set({
+        ...(input.first_name !== undefined && { firstName: input.first_name }),
+        ...(input.last_name !== undefined && { lastName: input.last_name }),
+        ...(input.email !== undefined && { email: input.email }),
+        ...(input.phone_number !== undefined && { phoneNumber: input.phone_number }),
+        ...(input.hire_date !== undefined && { hireDate: input.hire_date }),
+        ...(input.job_id !== undefined && { jobId: input.job_id }),
+        ...(input.salary !== undefined && { salary: input.salary.toFixed(2) }),
+        ...(input.manager_id !== undefined && { managerId: input.manager_id }),
+        ...(input.department_id !== undefined && { departmentId: input.department_id }),
+        ...(input.employment_status !== undefined && { employmentStatus: input.employment_status }),
+        ...(input.employment_type !== undefined && { employmentType: input.employment_type }),
+        ...(input.termination_date !== undefined && { terminationDate: input.termination_date }),
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(employees.employeeId, id))
+      .returning();
+
+    if (!row) return null;
+
+    await enqueueEmployeeEvent(tx, 'employee.updated', row);
+    return toApiRow(row);
+  });
+}
+
+
+export async function terminate(id: number, terminationDate: string): Promise<EmployeeApiRow | null> {
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .update(employees)
+      .set({
+        employmentStatus: 'TERMINATED',
+        terminationDate,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(and(eq(employees.employeeId, id), ne(employees.employmentStatus, 'TERMINATED')))
+      .returning();
+
+    if (!row) return null;
+
+    await enqueueEmployeeEvent(tx, 'employee.terminated', row);
+    return toApiRow(row);
+  });
 }
 
 export async function remove(id: number): Promise<boolean> {

@@ -92,6 +92,7 @@ async function main(): Promise<void> {
         );
       } catch (err) {
         await client.query('ROLLBACK');
+        // INSERT DATA
         throw err; // kafkajs akan retry pesan yang sama
       } finally {
         client.release();

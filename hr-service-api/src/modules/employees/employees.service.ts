@@ -84,3 +84,17 @@ export async function deleteEmployee(id: number): Promise<void> {
 
   await employeeRepository.remove(id);
 }
+
+
+export async function terminateEmployee(id: number): Promise<EmployeeApiRow> {
+  const existing = await employeeRepository.findById(id);
+  if (!existing) throw ApiError.notFound(`Employee with id ${id} not found`);
+  if (existing.employmentStatus === 'TERMINATED') throw ApiError.conflict('Employee sudah berstatus TERMINATED');
+
+  const today = new Date().toISOString().slice(0, 10);
+  if (today < existing.hireDate) throw ApiError.badRequest('termination_date tidak boleh lebih awal dari hire_date');
+
+  const terminated = await employeeRepository.terminate(id, today);
+  if (!terminated) throw ApiError.conflict('Status employee sudah berubah, terminate dibatalkan');
+  return terminated;
+}

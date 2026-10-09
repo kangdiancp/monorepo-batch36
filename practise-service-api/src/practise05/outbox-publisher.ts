@@ -31,6 +31,7 @@ async function publishBatch(): Promise<number> {
 
     for (const row of rows) {
       try {
+        // producer send message to kafka broker
         const [meta] = await producer.send({
           topic: row.topic,
           messages: [

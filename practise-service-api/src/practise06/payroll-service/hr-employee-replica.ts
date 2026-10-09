@@ -1,9 +1,10 @@
 import { Pool } from 'pg';
-import { env } from '../../config/env';
+import { env } from '../../../src/config/env';
 
 // ============================================================================
 // hr-employee-replica.repository.ts
-// Insert ketable replika hr.employees & hr.departments di payroll_db (kita gunakan raw sql karena sederhana)
+// Menulis ke replika hr.employees & hr.departments di payroll_db (raw SQL,
+// karena ini read-model tipis).
 // ============================================================================
 
 export const pool = new Pool({
@@ -23,7 +24,7 @@ export interface EmployeeReplicaInput {
   lastName: string;
   email: string;
   departmentId: number | null;
-  salary: string; 
+  salary: string; // string "8500000.00" -> kolom NUMERIC, tidak lewat float
   employmentStatus: string;
   employmentType: string;
   updatedAt: string;
