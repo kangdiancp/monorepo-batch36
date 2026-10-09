@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { env } from '../../../src/config/env';
+import { env } from '../../config/env';
 
 // ============================================================================
 // hr-employee-replica.repository.ts

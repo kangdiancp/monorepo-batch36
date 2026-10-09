@@ -84,18 +84,3 @@ export const listEmployeeQuerySchema = Type.Object({
 })
 export type ListEmployeeQuery = Static<typeof listEmployeeQuerySchema>
 
-export const employeeEventsOutbox = hr.table("employee_events_outbox", {
-	outboxId: uuid("outbox_id").defaultRandom().primaryKey().notNull(),
-	aggregateType: varchar("aggregate_type", { length: 50 }).default('EMPLOYEE').notNull(),
-	aggregateId: integer("aggregate_id").notNull(),
-	eventType: varchar("event_type", { length: 50 }).notNull(), // employee.created | employee.updated | employee.terminated
-	payload: jsonb("payload").notNull(),
-	status: varchar("status", { length: 20 }).default('PENDING').notNull(), // PENDING | PUBLISHED | FAILED
-	retryCount: integer("retry_count").default(0).notNull(),
-	errorMessage: varchar("error_message", { length: 1000 }),
-	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	publishedAt: timestamp("published_at", { mode: 'string' }),
-}, (table) => [
-	index("idx_employee_outbox_pending").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")).where(sql`(status = 'PENDING'::character varying)`),
-	check("ck_employee_outbox_status", sql`(status)::text = ANY ((ARRAY['PENDING'::character varying, 'PUBLISHED'::character varying, 'FAILED'::character varying])::text[])`),
-]);
