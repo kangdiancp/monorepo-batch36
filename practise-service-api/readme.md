@@ -1,8 +1,21 @@
-docker compose -f docker-compose.otel.yml exec kafka /opt/kafka/bin/kafka-topics.sh \
-  --bootstrap-server localhost:29092 --delete --topic lamaran-abc
+Kafka CLI
+--------------------------------
+--list topic
+docker compose exec kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:29092 --list
 
-docker compose -f docker-compose.otel.yml exec kafka /opt/kafka/bin/kafka-topics.sh \
-  --bootstrap-server localhost:29092 --delete --topic lamaran-xyz
+-- list topic detail
+docker compose exec kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:29092 --describe
+
+--delete
+docker compose -f docker-compose.otel.yml exec kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:29092 --delete --topic lamaran-abc
+
+docker compose -f docker-compose.otel.yml exec kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:29092 --delete --topic lamaran-xyz
+
+
+--delete all
+docker compose down -v
+
+docker compose up -d
 
 
 docker compose down -v 
