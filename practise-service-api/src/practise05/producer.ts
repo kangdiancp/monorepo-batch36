@@ -12,16 +12,21 @@ interface Surat {
 }
 
 const SURAT: Surat[] = [
-  { id: 'A', applicantId: 'pelamar-01', company: 'abc' },
+/*   { id: 'A', applicantId: 'pelamar-01', company: 'abc' },
   { id: 'B', applicantId: 'pelamar-01', company: 'abc' },
   { id: 'C', applicantId: 'pelamar-01', company: 'abc' },
   { id: 'D', applicantId: 'pelamar-02', company: 'abc' },
-  { id: 'E', applicantId: 'pelamar-03', company: 'abc' },
-  { id: 'F', applicantId: 'pelamar-04', company: 'xyz' },
-  { id: 'G', applicantId: 'pelamar-05', company: 'xyz' },
+  { id: 'E', applicantId: 'pelamar-03', company: 'abc' }, */
+  { id: 'AA', applicantId: 'pelamar-05', company: 'abc' },
+  { id: 'BB', applicantId: 'pelamar-06', company: 'abc' },
+  { id: 'CC', applicantId: 'pelamar-07', company: 'abc' },
+  { id: 'DD', applicantId: 'pelamar-08', company: 'abc' },
+  { id: 'EE', applicantId: 'pelamar-09', company: 'abc' },
+  { id: 'FF', applicantId: 'pelamar-10', company: 'xyz' },
+/*   { id: 'G', applicantId: 'pelamar-05', company: 'xyz' },
   { id: 'H', applicantId: 'pelamar-05', company: 'xyz' },
   { id: 'I', applicantId: 'pelamar-06', company: 'xyz' },
-  { id: 'J', applicantId: 'pelamar-06', company: 'xyz' },
+  { id: 'J', applicantId: 'pelamar-06', company: 'xyz' }, */
 ];
 
 async function main(): Promise<void> {

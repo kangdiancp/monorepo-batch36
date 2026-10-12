@@ -34,7 +34,7 @@ async function publishBatch(): Promise<number> {
         // producer send message to kafka broker
         const [meta] = await producer.send({
           topic: row.topic,
-          messages: [
+          messages: [ //1 record -> payload
             {
               key: row.applicant_id, // key sama -> partisi sama -> urutan terjaga
               value: JSON.stringify({ event_id: row.event_id, ...row.payload }),

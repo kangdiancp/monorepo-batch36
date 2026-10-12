@@ -1,3 +1,8 @@
+Running docker compose
+------------------------
+
+docker compose -f infra/docker-compose.yml up -d
+
 Kafka CLI
 --------------------------------
 --list topic
