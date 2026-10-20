@@ -59,7 +59,7 @@ async function main() {
     });
 
 
-
+    // PART 2 : CREATE QUEUEU
     //4.1 kirim order
     await orderQueue.add('order-food', {
         orderId: '1',
