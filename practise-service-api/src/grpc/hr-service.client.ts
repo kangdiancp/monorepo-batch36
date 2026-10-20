@@ -8,6 +8,9 @@ import {
 const HR_SERVICE_GRPC_URL = process.env.HR_SERVICE_GRPC_URL ?? 'localhost:50051';
 
 
+// Singleton — 1 channel gRPC dipakai ulang untuk semua request, jadi ga bikin
+// new connection tiap kali dipanggil 
+//
 let client: EmployeeServiceClient | undefined;
 
 function getClient(): EmployeeServiceClient {
@@ -17,11 +20,11 @@ function getClient(): EmployeeServiceClient {
     return client;
 }
 
+/** Tutup channel gRPC — dipanggil waktu graceful shutdown (`server.ts`). */
 export function closeHrServiceClient(): void {
     client?.close();
     client = undefined;
 }
-
 
 export function getEmployee(employeeId: number): Promise<EmployeeResponse | null> {
     return new Promise((resolve, reject) => {
@@ -36,7 +39,10 @@ export function getEmployee(employeeId: number): Promise<EmployeeResponse | null
 }
 
 
-export function listEmployeesForPayroll(departmentId?: number, employmentStatus?: string): Promise<EmployeeResponse[]> {
+export function listEmployeesForPayroll(
+    departmentId?: number,
+    employmentStatus?: string,
+): Promise<EmployeeResponse[]> {
     return new Promise((resolve, reject) => {
         const results: EmployeeResponse[] = [];
         const call = getClient().getEmployeesForPayroll({
@@ -79,7 +85,7 @@ export function listDepartments(): Promise<DepartmentResponse[]> {
         const results: DepartmentResponse[] = [];
         const call = getClient().listDepartments({});
 
-        call.on('data', (res: DepartmentResponse) => results.push(res));
+        call.on('data', (res: DepartmentResponse) => results.push(res)); //array
         call.on('end', () => resolve(results));
         call.on('error', (err) => reject(err));
     });

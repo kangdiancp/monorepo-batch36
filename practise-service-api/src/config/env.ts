@@ -71,14 +71,25 @@ const parsedEnv = {
   GRPC_PORT: optionalPositiveInt('GRPC_PORT', 50051),
   API_PREFIX: optionalString('API_PREFIX', '/api/v1'),
 
+  //disini kita declare 2 db config : hr_db & payroll_db
+  //config for hr-service-api
   DB_HOST: requireString('DB_HOST'),
   DB_PORT: optionalPositiveInt('DB_PORT', 5432),
   DB_NAME: requireString('DB_NAME'),
-  DB_NAME_PAYROLL: requireString('DB_NAME_PAYROLL'),
   DB_USER: requireString('DB_USER'),
   DB_PASSWORD: requireString('DB_PASSWORD'),
   DB_SCHEMA: optionalString('DB_SCHEMA', 'hr'),
   DB_SCHEMAS: optionalString('DB_SCHEMAS', 'fin,hr,saga,public'),
+
+  //config env for payroll
+  DB_HOST_PAYROLL: requireString('DB_HOST'),
+  DB_PORT_PAYROLL: optionalPositiveInt('DB_PORT', 5432),
+  DB_NAME_PAYROLL: requireString('DB_NAME_PAYROLL'),
+  DB_USER_PAYROLL: requireString('DB_USER'),
+  DB_PASSWORD_PAYROLL: requireString('DB_PASSWORD'),
+  DB_SCHEMA_PAYROLL: optionalString('DB_SCHEMA', 'hr'),
+  
+
   DB_POOL_MAX: optionalPositiveInt('DB_POOL_MAX', 10),
   DB_SSL: optionalBoolean('DB_SSL', false),
 };

@@ -1,6 +1,6 @@
 import { and, count, eq, ilike, ne, or, type SQL } from 'drizzle-orm';
 import { trace } from '@opentelemetry/api';
-import { db } from '../../db';
+import { db_hr } from '../../db';
 import { employees } from '../../db/schema';
 import type { CreateEmployeeInput, ListEmployeeQuery, UpdateEmployeeInput } from './employees.schema';
 import type { EmployeeApiRow, EmployeeRow } from './employees.types';
@@ -47,8 +47,8 @@ export async function findAll(
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
       const [rows, totalRow] = await Promise.all([
-        db.select().from(employees).where(whereClause).limit(limit).offset(offset),
-        db.select({ total: count() }).from(employees).where(whereClause),
+        db_hr.select().from(employees).where(whereClause).limit(limit).offset(offset),
+        db_hr.select({ total: count() }).from(employees).where(whereClause),
       ]);
 
       const total = totalRow[0]?.total ?? 0;
@@ -63,13 +63,13 @@ export async function findAll(
 }
 
 export async function findById(id: number): Promise<EmployeeApiRow | null> {
-  const [row] = await db.select().from(employees).where(eq(employees.employeeId, id));
+  const [row] = await db_hr.select().from(employees).where(eq(employees.employeeId, id));
   return row ? toApiRow(row) : null;
 }
 
 /** INSERT employee + event `employee.created` dalam SATU transaksi. */
 export async function create(input: CreateEmployeeInput): Promise<EmployeeApiRow> {
-  return db.transaction(async (tx) => {
+  return db_hr.transaction(async (tx) => {
     const [row] = await tx
       .insert(employees)
       .values({
@@ -94,7 +94,7 @@ export async function create(input: CreateEmployeeInput): Promise<EmployeeApiRow
 }
 
 export async function update(id: number, input: UpdateEmployeeInput): Promise<EmployeeApiRow | null> {
-  return db.transaction(async (tx) => {
+  return db_hr.transaction(async (tx) => {
     const [row] = await tx
       .update(employees)
       .set({
@@ -124,7 +124,7 @@ export async function update(id: number, input: UpdateEmployeeInput): Promise<Em
 
 
 export async function terminate(id: number, terminationDate: string): Promise<EmployeeApiRow | null> {
-  return db.transaction(async (tx) => {
+  return db_hr.transaction(async (tx) => {
     const [row] = await tx
       .update(employees)
       .set({
@@ -143,7 +143,7 @@ export async function terminate(id: number, terminationDate: string): Promise<Em
 }
 
 export async function remove(id: number): Promise<boolean> {
-  const result = await db
+  const result = await db_hr
     .delete(employees)
     .where(eq(employees.employeeId, id))
     .returning({ employeeId: employees.employeeId });

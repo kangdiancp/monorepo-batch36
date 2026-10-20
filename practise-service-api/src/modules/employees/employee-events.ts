@@ -1,10 +1,10 @@
-import type { db } from '../../db';
+import type { db_hr } from '../../db';
 import { employeeEventsOutbox } from '../../db/schema';
 import type { EmployeeEventType, HrEmployeeEvent } from '../../common/kafka/kafka-config';
 import type { EmployeeRow } from './employees.types';
 
-/** Mode transaksi Drizzle — supaya enqueue bisa dipanggil di dalam db.transaction(). */
-export type DbTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+/** Tipe transaksi Drizzle — supaya enqueue bisa dipanggil di dalam db.transaction(). */
+export type DbTx = Parameters<Parameters<typeof db_hr.transaction>[0]>[0];
 
 
 function buildEventData(row: EmployeeRow): NonNullable<HrEmployeeEvent['data']> {
@@ -20,16 +20,17 @@ function buildEventData(row: EmployeeRow): NonNullable<HrEmployeeEvent['data']> 
   };
 }
 
-/** Insert event ke hr.employee_events_outbox — Gunakan `tx` untuk melakukan transaksi yang sama saat perubahan employee. */
+/** Tulis event ke hr.employee_events_outbox — WAJIB dipanggil dengan `tx` dari transaksi yang sama dengan perubahan employee. */
 export async function enqueueEmployeeEvent(
   tx: DbTx,
   eventType: EmployeeEventType,
   row: EmployeeRow,
 ): Promise<void> {
+ 
   await tx.insert(employeeEventsOutbox).values({
     aggregateId: row.employeeId,
     eventType,
     // terminated tidak membawa data — consumer cukup tahu "employee X resign/terminated"
-    payload: eventType === 'employee.terminated' ? null : buildEventData(row),
+    payload: eventType === 'employee.terminated' ? "{}" : buildEventData(row),
   });
 }

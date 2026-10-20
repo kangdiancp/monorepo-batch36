@@ -83,3 +83,4 @@ export const listEmployeeQuerySchema = Type.Object({
   employmentType: Type.Optional(employmentTypeSchema),
 })
 export type ListEmployeeQuery = Static<typeof listEmployeeQuerySchema>
+

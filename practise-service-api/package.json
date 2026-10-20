@@ -21,6 +21,7 @@
     "@grpc/reflection": "^1.0.4",
     "@internal/outbox-publisher": "github:kangdiancp/outbox-publisher#v0.1.0",
     "@sinclair/typebox": "^0.34.52",
+    "bullmq": "^6.3.19",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.45.2",
     "fastify": "^5.12.0",
