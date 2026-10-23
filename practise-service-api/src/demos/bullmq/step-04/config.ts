@@ -16,6 +16,7 @@ export const WORKERS = {
 } as const;
 export type WorkerCode = keyof typeof WORKERS;
 
+//record mirip dengan map yg punya key & value
 export const MENU: Record<string, { station: StationCode; cookMs: number }> = {
   'Nasi Goreng': { station: 'makanan', cookMs: 2000 },
   'Mie Ayam': { station: 'makanan', cookMs: 2000 },
@@ -31,27 +32,24 @@ export const MENU: Record<string, { station: StationCode; cookMs: number }> = {
 
 export type Sumber = 'waiter' | 'cashier' | 'order-form';
 
-export interface PesananInput {
+export interface OrderInput {
   orderId: string;
   meja: string;
   items: string[];
   sumber: Sumber;
   vip?: boolean;
   preorderDetik?: number;
-  simulasiGagal?: number; // KHUSUS DEMO (99 = selalu gagal)
+  simulasiFailed?: number; // untuk demo (99 = selalu gagal)
 }
 
-/**
- * Payload job SENGAJA minimal: cuma id item. Data lengkapnya dibaca worker dari
- * Postgres, jadi tidak ada salinan data basi di Redis.
- */
+
 export interface ItemJob {
   itemId: number;
 }
 
 export const STATUS_ITEM = ['PENDING', 'QUEUED', 'COOKING', 'RETRYING', 'DONE', 'FAILED'] as const;
 
-// PRIORITY: angka KECIL = lebih didahulukan; job TANPA priority justru paling didahulukan.
+// angka terkecil atau tanpa priority yg diprioritaskan
 export const PRIORITY = { VIP: 1, REGULER: 10 } as const;
 
 export const DEFAULT_JOB_OPTS = {

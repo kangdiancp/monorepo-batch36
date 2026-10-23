@@ -1,16 +1,10 @@
 import type { PoolClient } from 'pg';
-import { MENU, STATUS_ITEM, type PesananInput } from './config';
+import { MENU, STATUS_ITEM, type OrderInput } from './config';
 import { pool, tx } from './db';
 
-// ------------------------------------------------------------------ PRODUCER
 
-/**
- * Simpan pesanan + semua item dalam SATU transaksi (semua tersimpan atau tidak sama sekali).
- * Item masuk dengan status PENDING — itulah "outbox": penanda bahwa item ini
- * SUDAH di DB tapi BELUM diantrekan ke BullMQ.
- * order_id yang sudah ada -> dibalas dibuat=false (idempotent), tidak ada item dobel.
- */
-export async function simpanPesanan(p: PesananInput): Promise<{ dibuat: boolean; itemIds: number[] }> {
+// simpan semua transaksi dalam atomik (jika gagal reject semua)
+export async function saveOrder(p: OrderInput): Promise<{ dibuat: boolean; itemIds: number[] }> {
   return tx(async (c) => {
     const o = await c.query(
       `INSERT INTO resto.orders (order_id, meja, sumber, vip)
@@ -24,12 +18,12 @@ export async function simpanPesanan(p: PesananInput): Promise<{ dibuat: boolean;
     const itemIds: number[] = [];
     for (const menu of p.items) {
       const info = MENU[menu];
-      if (!info) throw new Error(`Menu tidak dikenal: "${menu}"`); // -> ROLLBACK seluruh pesanan
+      if (!info) throw new Error(`Menu tidak dikenal: "${menu}"`); 
       const r = await c.query(
         `INSERT INTO resto.order_items (order_id, menu, station, available_at, simulasi_gagal)
          VALUES ($1, $2, $3, CURRENT_TIMESTAMP + make_interval(secs => $4::int), $5)
          RETURNING item_id::int AS item_id`,
-        [p.orderId, menu, info.station, p.preorderDetik ?? 0, p.simulasiGagal ?? null],
+        [p.orderId, menu, info.station, p.preorderDetik ?? 0, p.simulasiFailed ?? null],
       );
       itemIds.push(r.rows[0].item_id as number);
     }
@@ -37,8 +31,7 @@ export async function simpanPesanan(p: PesananInput): Promise<{ dibuat: boolean;
   });
 }
 
-// ------------------------------------------------------------------ WORKER
-
+//  WORKER
 export interface ItemDimasak {
   item_id: number;
   order_id: string;
@@ -49,10 +42,9 @@ export interface ItemDimasak {
 }
 
 /**
- * Tandai COOKING. Return null kalau item sudah DONE/FAILED (job duplikat,
- * mis. diantre ulang) -> worker harus MELEWATI, jangan masak dua kali.
+ * agar ga di execute lagi payload, set status jadi COOKING
  */
-export async function mulaiMasak(itemId: number, koki: string, percobaan: number): Promise<ItemDimasak | null> {
+export async function startCooking(itemId: number, koki: string, percobaan: number): Promise<ItemDimasak | null> {
   const { rows } = await pool.query(
     `UPDATE resto.order_items i
         SET status = 'COOKING', attempts = $3, cooked_by = $2,
@@ -73,8 +65,8 @@ export async function mulaiMasak(itemId: number, koki: string, percobaan: number
   return rows[0] as ItemDimasak;
 }
 
-/** Status order DITURUNKAN dari status semua itemnya (bukan diisi manual). */
-async function hitungStatusOrder(c: PoolClient, orderId: string): Promise<void> {
+
+async function countStatusOrder(c: PoolClient, orderId: string): Promise<void> {
   await c.query(
     `UPDATE resto.orders o
         SET status = s.status, updated_at = CURRENT_TIMESTAMP
@@ -89,7 +81,7 @@ async function hitungStatusOrder(c: PoolClient, orderId: string): Promise<void> 
   );
 }
 
-export async function tandaiSelesai(itemId: number): Promise<void> {
+export async function setOrderFinished(itemId: number): Promise<void> {
   await tx(async (c) => {
     const r = await c.query(
       `UPDATE resto.order_items
@@ -98,12 +90,12 @@ export async function tandaiSelesai(itemId: number): Promise<void> {
         RETURNING order_id`,
       [itemId],
     );
-    if (r.rows[0]) await hitungStatusOrder(c, r.rows[0].order_id);
+    if (r.rows[0]) await countStatusOrder(c, r.rows[0].order_id);
   });
 }
 
-/** Dipanggil di SETIAP percobaan gagal. permanen=true -> FAILED, selain itu RETRYING. */
-export async function catatGagal(itemId: number, pesan: string, permanen: boolean, percobaan: number): Promise<void> {
+/** Dipanggil tiap percobaan gagal. permanen=true -> FAILED, selain itu RETRYING. */
+export async function setFailedOrder(itemId: number, pesan: string, permanen: boolean, percobaan: number): Promise<void> {
   await tx(async (c) => {
     const r = await c.query(
       `UPDATE resto.order_items
@@ -114,13 +106,13 @@ export async function catatGagal(itemId: number, pesan: string, permanen: boolea
         RETURNING order_id`,
       [itemId, pesan, permanen, percobaan],
     );
-    if (r.rows[0]) await hitungStatusOrder(c, r.rows[0].order_id);
+    if (r.rows[0]) await countStatusOrder(c, r.rows[0].order_id);
   });
 }
 
-// ------------------------------------------------------------------ MONITORING
 
-export async function hitungItemPerStatus(): Promise<Record<string, Record<string, number>>> {
+
+export async function countItemPerStatus(): Promise<Record<string, Record<string, number>>> {
   const { rows } = await pool.query(
     `SELECT station, status, COUNT(*)::int AS n FROM resto.order_items GROUP BY station, status`,
   );
@@ -132,7 +124,7 @@ export async function hitungItemPerStatus(): Promise<Record<string, Record<strin
   return hasil;
 }
 
-export async function pesananTerbaru(limit = 10) {
+export async function latestOrder(limit = 10) {
   const { rows } = await pool.query(
     `SELECT o.order_id, o.meja, o.sumber, o.vip, o.status,
             string_agg(i.menu || ':' || i.status, ', ' ORDER BY i.item_id) AS items
@@ -146,7 +138,7 @@ export async function pesananTerbaru(limit = 10) {
   return rows;
 }
 
-export async function itemGagal(limit = 20) {
+export async function itemFailed(limit = 20) {
   const { rows } = await pool.query(
     `SELECT item_id::int AS item_id, order_id, menu, attempts, last_error
        FROM resto.order_items WHERE status = 'FAILED' ORDER BY item_id DESC LIMIT $1`,

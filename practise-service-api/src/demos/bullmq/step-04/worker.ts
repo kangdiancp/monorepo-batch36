@@ -1,26 +1,26 @@
 import { Worker } from 'bullmq';
 import { MENU, STATIONS, WORKERS, connection, type ItemJob, type WorkerCode } from './config';
 import { pool } from './db';
-import { startRelayLoop, tutupRelay } from './outbox';
-import { catatGagal, mulaiMasak, tandaiSelesai } from './repo';
+import { startRelayLoop, closeRelay } from './outbox';
+import { setFailedOrder, startCooking, setOrderFinished } from './repo';
 
-// ============================================================================
-// WORKERS (Koki 1, Koki 2, Barista). Data pesanan dibaca & status ditulis ke Postgres.
+
+// WORKERS (Koki 1, Koki 2, Barista). 
+// Data Order akan disimpan di postgre.
 //
 //   npx tsx worker.ts                   # semua worker + relay dalam satu proses
-//   WORKER=koki-1 npx tsx worker.ts     # hanya Koki 1
-//   RELAY=off npx tsx worker.ts         # tanpa relay (kalau relay dijalankan terpisah)
+//   npx tsx worker.ts WORKER=koki-1      # hanya Koki 1
+//   npx tsx worker.ts RELAY=off          # tanpa relay (kalau relay dijalankan terpisah)
 //
-// CATATAN: job ini AT-LEAST-ONCE. Kalau worker mati SETELAH masak tapi SEBELUM
-// status DONE tersimpan, job diulang dan masak dua kali. Karena itu efek samping
-// di dunia nyata (kirim email, tagih kartu) harus dibuat idempotent.
-// ============================================================================
+// jika worker mati after cooking tapi sebelum status DONE terismpan
+// job diulang 2x, sebagai simulasi di realworld.
+
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const t0 = Date.now();
 const log = (msg: string) => console.log(`[${((Date.now() - t0) / 1000).toFixed(1).padStart(5)}s] ${msg}`);
 
-function buatWorker(code: WorkerCode): Worker<ItemJob> {
+function createWorker(code: WorkerCode): Worker<ItemJob> {
   const { nama, station, concurrency } = WORKERS[code];
   const { queue, limiter, label } = STATIONS[station];
 
@@ -30,13 +30,13 @@ function buatWorker(code: WorkerCode): Worker<ItemJob> {
       const percobaan = job.attemptsMade + 1;
 
       // Baca dari Postgres (sumber kebenaran) + tandai COOKING
-      const item = await mulaiMasak(job.data.itemId, nama, percobaan);
+      const item = await startCooking(job.data.itemId, nama, percobaan);
       if (!item) {
-        log(`⏭️  ${nama}: item ${job.data.itemId} sudah selesai/dibatalkan, job duplikat dilewati`);
+        log(`${nama}: item ${job.data.itemId} sudah selesai/dibatalkan, job duplikat dilewati`);
         return { dilewati: true, percobaan };
       }
 
-      log(`👨‍🍳 ${nama} memasak ${item.menu} (${item.meja}) [item ${item.item_id}] ${item.vip ? 'VIP' : 'reguler'} — percobaan ${percobaan}/${job.opts.attempts}`);
+      log(`${nama} memasak ${item.menu} (${item.meja}) [item ${item.item_id}] ${item.vip ? 'VIP' : 'reguler'} — percobaan ${percobaan}/${job.opts.attempts}`);
 
       const cookMs = MENU[item.menu]?.cookMs ?? 1500;
       for (let step = 1; step <= 4; step++) {
@@ -48,7 +48,7 @@ function buatWorker(code: WorkerCode): Worker<ItemJob> {
         throw new Error('masakan gosong / bahan habis'); // khusus demo
       }
 
-      await tandaiSelesai(item.item_id); // DONE + hitung ulang status order (1 transaksi)
+      await setOrderFinished(item.item_id); // DONE + hitung ulang status order (1 transaksi)
       return { dikerjakanOleh: nama, percobaan };
     },
     { connection, concurrency, limiter },
@@ -57,27 +57,27 @@ function buatWorker(code: WorkerCode): Worker<ItemJob> {
   worker.on('completed', (job, hasil: { dilewati?: boolean; percobaan: number }) => {
     if (hasil.dilewati) return;
     const info = hasil.percobaan > 1 ? ` (setelah ${hasil.percobaan} percobaan)` : '';
-    log(`✅ ${nama}: item ${job.data.itemId} siap diantar${info}`);
+    log(`${nama}: item ${job.data.itemId} siap diantar${info}`);
   });
 
-  // 'failed' menyala di SETIAP percobaan gagal -> catat ke Postgres tiap kali
+  // 'failed' menyala di SETIAP percobaan gagal -> catat ke Postgres 
   worker.on('failed', (job, err) => {
     if (!job) return;
     const permanen = job.attemptsMade >= (job.opts.attempts ?? 1);
     log(
       permanen
-        ? `💀 ${nama}: item ${job.data.itemId} GAGAL PERMANEN — ${err.message}`
-        : `🔁 ${nama}: item ${job.data.itemId} gagal (${err.message}) — akan diulang`,
+        ? `${nama}: item ${job.data.itemId} GAGAL PERMANEN — ${err.message}`
+        : `${nama}: item ${job.data.itemId} gagal (${err.message}) — akan diulang`,
     );
-    catatGagal(job.data.itemId, err.message, permanen, job.attemptsMade).catch((e: Error) =>
-      log(`⚠️  gagal mencatat kegagalan ke Postgres: ${e.message}`),
+    setFailedOrder(job.data.itemId, err.message, permanen, job.attemptsMade).catch((e: Error) =>
+      log(`gagal mencatat kegagalan ke Postgres: ${e.message}`),
     );
   });
 
-  worker.on('stalled', (jobId) => log(`⚠️  ${nama}: job ${jobId} stalled, akan diambil ulang`));
+  worker.on('stalled', (jobId) => log(`${nama}: job ${jobId} stalled, akan diambil ulang`));
   worker.on('error', (err) => console.error(`${nama} error:`, err));
 
-  log(`🍳 ${nama} siap di ${label} | concurrency=${concurrency} | limit ${limiter.max}/${limiter.duration / 1000}s`);
+  log(`${nama} siap di ${label} | concurrency=${concurrency} | limit ${limiter.max}/${limiter.duration / 1000}s`);
   return worker;
 }
 
@@ -92,16 +92,16 @@ function pilihWorker(): WorkerCode[] {
 }
 
 function main(): void {
-  const workers = pilihWorker().map(buatWorker);
+  const workers = pilihWorker().map(createWorker);
 
-  // Jaring pengaman: antre ulang item PENDING (mis. saat Redis sempat mati waktu producer jalan)
-  const hentikanRelay = process.env.RELAY === 'off' ? undefined : startRelayLoop(5000, log);
+
+  const stopRelay = process.env.RELAY === 'off' ? undefined : startRelayLoop(5000, log);
 
   const shutdown = async (signal: string) => {
     console.log(`\n${signal} diterima, selesaikan masakan yang sedang jalan dulu...`);
-    hentikanRelay?.();
+    stopRelay?.();
     await Promise.all(workers.map((w) => w.close()));
-    await tutupRelay();
+    await closeRelay();
     await pool.end();
     process.exit(0);
   };

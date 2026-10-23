@@ -10,22 +10,8 @@ import {
 } from './config';
 import { tx } from './db';
 
-// ============================================================================
-// OUTBOX RELAY: memindahkan item PENDING (di Postgres) menjadi job BullMQ.
-//
-// MASALAH yang diselesaikan (dual write): menyimpan ke Postgres LALU memanggil
-// queue.add() itu dua sistem berbeda — tidak bisa satu transaksi.
-//   - Kalau queue.add() dilakukan DULU lalu DB gagal -> job tanpa data.
-//   - Kalau DB dulu lalu Redis mati              -> pesanan ada, tidak pernah dimasak.
-// SOLUSI: simpan dulu di DB dengan status PENDING (di dalam transaksi pesanan).
-// Relay ini yang mengantre-kan. Kalau Redis mati, item tetap PENDING dan
-// diantre ulang di putaran relay berikutnya. Tidak ada pesanan yang hilang.
-//
-// Aman dijalankan paralel (beberapa proses): FOR UPDATE SKIP LOCKED.
-// Aman diulang: jobId "item-<id>" membuat add() kedua diabaikan BullMQ,
-// dan worker juga melewati item yang sudah DONE (lihat mulaiMasak).
-// ============================================================================
 
+// OUTBOX RELAY: memindahkan item PENDING (di Postgres) menjadi job BullMQ.
 const queues = new Map<StationCode, Queue<ItemJob>>();
 
 function getQueue(code: StationCode): Queue<ItemJob> {
@@ -37,7 +23,7 @@ function getQueue(code: StationCode): Queue<ItemJob> {
   return q;
 }
 
-/** Redis mati -> queue.add() bisa menggantung lama; batasi supaya cepat gagal. */
+/** kasih timeout jika Redis mati -> queue.add() bisa menggantung lama; kasih timeout supaya cepat gagal klo kelamaan. */
 function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
   let timer: NodeJS.Timeout | undefined;
   const timeout = new Promise<never>((_, reject) => {
@@ -49,7 +35,7 @@ function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
 /** Satu putaran relay. Return jumlah item yang berhasil diantre-kan. Throw kalau Redis bermasalah. */
 export async function relayOnce(batchSize = 50): Promise<number> {
   return tx(async (c) => {
-    // Delay pre-order dihitung di DB (CURRENT_TIMESTAMP DB), bukan di app -> tidak terpengaruh beda jam.
+    // Delay pre-order dihitung di DB (CURRENT_TIMESTAMP DB), bukan di app -> spy ga ngaruh di time.
     const { rows } = await c.query(
       `SELECT i.item_id::int AS item_id, i.station, o.vip,
               GREATEST(0, EXTRACT(EPOCH FROM (i.available_at - CURRENT_TIMESTAMP)) * 1000)::int AS delay_ms
@@ -80,8 +66,7 @@ export async function relayOnce(batchSize = 50): Promise<number> {
       );
     }
 
-    // Baris masih terkunci sejak SELECT, jadi worker yang langsung mengambil job
-    // akan menunggu commit ini dulu sebelum mengubah status item -> urutan status terjaga.
+    // worker akan ambil job yg status=QUEUED
     await c.query(
       `UPDATE resto.order_items SET status = 'QUEUED', queued_at = CURRENT_TIMESTAMP
         WHERE item_id = ANY($1::bigint[])`,
@@ -94,15 +79,15 @@ export async function relayOnce(batchSize = 50): Promise<number> {
 export function startRelayLoop(intervalMs: number, log: (m: string) => void): () => void {
   const jalan = () =>
     relayOnce()
-      .then((n) => n > 0 && log(`📮 relay: ${n} item diantre-kan dari Postgres ke BullMQ`))
-      .catch((e: Error) => log(`⚠️  relay gagal (item tetap PENDING, dicoba lagi): ${e.message}`));
+      .then((n) => n > 0 && log(`relay: ${n} item diantre-kan dari Postgres ke BullMQ`))
+      .catch((e: Error) => log(`relay gagal (item tetap PENDING, dicoba lagi): ${e.message}`));
 
   void jalan();
   const timer = setInterval(() => void jalan(), intervalMs);
   return () => clearInterval(timer);
 }
 
-export async function tutupRelay(): Promise<void> {
+export async function closeRelay(): Promise<void> {
   await Promise.all([...queues.values()].map((q) => q.close()));
   queues.clear();
 }
