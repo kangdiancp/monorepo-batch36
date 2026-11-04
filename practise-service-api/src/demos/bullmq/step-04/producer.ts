@@ -4,7 +4,7 @@ import { saveOrder } from './repo';
 import type { OrderInput } from './config';
 
 
-// PRODUCER (Pelayan / Kasir / Order Form): simpan ke Postgres, lalu antre ke BullMQ.
+// PRODUCER (Pelayan / Kasir / Order Form): simpan ke Postgres, lalu antre-kan ke BullMQ.
 // Jalankan demo: npx tsx producer.ts
 export async function sendOrder(p: OrderInput): Promise<void> {
   const tag = p.vip ? ' [VIP]' : '';

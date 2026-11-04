@@ -16,7 +16,7 @@ export const WORKERS = {
 } as const;
 export type WorkerCode = keyof typeof WORKERS;
 
-//record mirip dengan map yg punya key & value
+//record mirip dengan map : punya key & value
 export const MENU: Record<string, { station: StationCode; cookMs: number }> = {
   'Nasi Goreng': { station: 'makanan', cookMs: 2000 },
   'Mie Ayam': { station: 'makanan', cookMs: 2000 },

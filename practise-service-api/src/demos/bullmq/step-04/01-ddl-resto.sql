@@ -1,7 +1,7 @@
 CREATE SCHEMA IF NOT EXISTS resto;
 
 CREATE TABLE resto.orders (
-    order_id   VARCHAR(30) PRIMARY KEY,                -- key idempotensi: kirim ulang dengan id yg sama = ditolak
+    order_id   VARCHAR(30) PRIMARY KEY,                
     meja       VARCHAR(30) NOT NULL,
     sumber     VARCHAR(20) NOT NULL,
     vip        BOOLEAN     NOT NULL DEFAULT FALSE,
@@ -13,7 +13,7 @@ CREATE TABLE resto.orders (
 );
 
 CREATE TABLE resto.order_items (
-    item_id        BIGSERIAL PRIMARY KEY,               -- dipakai sebagai jobId di BullMQ ("item-<id>")
+    item_id        BIGSERIAL PRIMARY KEY,               -- item_id dipakai jadi id di job_id
     order_id       VARCHAR(30) NOT NULL REFERENCES resto.orders (order_id) ON DELETE CASCADE,
     menu           VARCHAR(60) NOT NULL,
     station        VARCHAR(20) NOT NULL,

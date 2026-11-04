@@ -11,7 +11,7 @@ import {
 import { tx } from './db';
 
 
-// OUTBOX RELAY: memindahkan item PENDING (di Postgres) menjadi job BullMQ.
+// OUTBOX RELAY: update status order dari PENDING (di Postgres) menjadi job ke BullMQ.
 const queues = new Map<StationCode, Queue<ItemJob>>();
 
 function getQueue(code: StationCode): Queue<ItemJob> {
