@@ -28,14 +28,22 @@ export async function sendOrder(p: OrderInput): Promise<void> {
 
 async function demo(): Promise<void> {
   const pesanan: OrderInput[] = [
-    { orderId: 'W-001', meja: 'Meja 1', items: ['Nasi Goreng', 'Es Teh'], sumber: 'waiter' },
+    /* { orderId: 'W-001', meja: 'Meja 1', items: ['Nasi Goreng', 'Es Teh'], sumber: 'waiter' },
     { orderId: 'C-001', meja: 'Meja 2', items: ['Mie Ayam', 'Kopi Susu'], sumber: 'cashier' },
     { orderId: 'F-001', meja: 'Meja 3', items: ['Sate Ayam', 'Jus Alpukat'], sumber: 'order-form' },
     { orderId: 'C-002', meja: 'Meja 4', items: ['Ayam Bakar'], sumber: 'cashier', simulasiFailed: 2 }, // gosong 2x gagal lalu sukses
     { orderId: 'W-002', meja: 'Meja 5', items: ['Rendang', 'Teh Tarik'], sumber: 'waiter', simulasiFailed: 99 }, // selalu gagal
     { orderId: 'W-003', meja: 'Meja VIP-99', items: ['Steak Wagyu', 'Kopi Susu'], sumber: 'waiter', vip: true },
     { orderId: 'F-002', meja: 'Meja 7', items: ['Nasi Goreng', 'Jus Alpukat'], sumber: 'order-form', preorderDetik: 15 },
-    { orderId: 'W-001', meja: 'Meja 1', items: ['Nasi Goreng', 'Es Teh'], sumber: 'waiter' }, // kirim ulang -> diabaikan
+    { orderId: 'W-001', meja: 'Meja 1', items: ['Nasi Goreng', 'Es Teh'], sumber: 'waiter' }, // kirim ulang -> diabaikan */
+    { orderId: 'W-002', meja: 'Meja 1', items: ['Nasi Goreng', 'Es Teh'], sumber: 'waiter' },
+    { orderId: 'C-002', meja: 'Meja 2', items: ['Mie Ayam', 'Kopi Susu'], sumber: 'cashier' },
+    { orderId: 'F-002', meja: 'Meja 3', items: ['Sate Ayam', 'Jus Alpukat'], sumber: 'order-form' },
+    { orderId: 'C-003', meja: 'Meja 4', items: ['Ayam Bakar'], sumber: 'cashier', simulasiFailed: 2 }, // gosong 2x gagal lalu sukses
+    { orderId: 'W-004', meja: 'Meja 5', items: ['Rendang', 'Teh Tarik'], sumber: 'waiter', simulasiFailed: 99 }, // selalu gagal
+    { orderId: 'W-005', meja: 'Meja VIP-99', items: ['Steak Wagyu', 'Kopi Susu'], sumber: 'waiter', vip: true },
+    { orderId: 'F-006', meja: 'Meja 7', items: ['Nasi Goreng', 'Jus Alpukat'], sumber: 'order-form', preorderDetik: 15 },
+    { orderId: 'W-007', meja: 'Meja 1', items: ['Nasi Goreng', 'Es Teh'], sumber: 'waiter' }, // kirim ulang -> diabaikan
   ];
 
   try {
