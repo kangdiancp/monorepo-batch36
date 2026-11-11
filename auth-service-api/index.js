@@ -51,7 +51,7 @@ const gracefulShutdown = (signal) => {
 //Close DB Pool
 const shutdownDependencies = async () => {
   try {
-    console.log('🔌 Closing PostgreSQL connection pool...');
+    console.log('Closing PostgreSQL connection pool...');
 
     if (typeof closeDB === 'function') {
       await closeDB();

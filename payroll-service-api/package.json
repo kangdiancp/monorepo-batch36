@@ -36,6 +36,7 @@
     "@grpc/grpc-js": "^1.14.4",
     "@grpc/proto-loader": "^0.8.1",
     "@grpc/reflection": "^1.0.4",
+    "bullmq": "^6.7.4",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.45.2",
     "drizzle-typebox": "^0.3.3",

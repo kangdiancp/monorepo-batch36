@@ -11,13 +11,13 @@ async function bootstrap(): Promise<void> {
   // REST server (Fastify) 
   const app = await createApp();
   await app.listen({ port: env.PORT, host: '0.0.0.0' });
-  console.log(`   REST server berjalan di http://localhost:${env.PORT}`);
-  console.log(`   Health check : http://localhost:${env.PORT}/health`);
-  console.log(`   API prefix   : ${env.API_PREFIX}`);
+  console.log(`REST server berjalan di http://localhost:${env.PORT}`);
+  console.log(`Health check : http://localhost:${env.PORT}/health`);
+  console.log(`API prefix: ${env.API_PREFIX}`);
 
   //startGrpcServer(50051);
   const grpcServer = await startGrpcServer(env.GRPC_PORT ?? 50051);
-  console.log(`   gRPC server  : 0.0.0.0:${env.GRPC_PORT ?? 50051}`);
+  console.log(`gRPC server  : 0.0.0.0:${env.GRPC_PORT ?? 50051}`);
 
 
   const shutdown = async (signal: string) => {
@@ -27,10 +27,10 @@ async function bootstrap(): Promise<void> {
 
 
     /**
-      * saat exit gunakan Ctrl + C di terminal, tryShutdown() akan dicall
-      * ini dilakukan untuk memastikan semua port yang dipakai di-relase
-      * tidak ada yang menggantung, kita kasih waktu 5s pake timeout fallback, 
-      * jika masih belum selesai kita paksa supaya di closed
+   * saat exit gunakan Ctrl + C di terminal, tryShutdown() akan dicall
+   * ini dilakukan untuk memastikan semua port yang dipakai di-relase
+   * tidak ada yang menggantung, kita kasih waktu 5s pake timeout fallback, 
+   * jika masih belum selesai kita paksa supaya di closed
     */
     await new Promise<void>((resolve) => {
       const forceTimeout = setTimeout(() => {
